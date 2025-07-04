@@ -42,10 +42,13 @@ class ExcelClone(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("pycalc")
-        self.resize(1200, 800)
-        # Inicializa la tabla con 100 filas y 26 columnas (A-Z)
-        self.table = QTableWidget(100, 26)
+        self.resize(1400, 900)
+        # --- Generar nombres de columnas estilo Excel (A, B, ..., Z, AA, AB, ..., ZZ) ---
+        self.column_names = self.generate_excel_columns(80)  # 80 columnas: A...CB
+        self.table = QTableWidget(100, len(self.column_names))
+        self.table.setHorizontalHeaderLabels(self.column_names)
         self.setCentralWidget(self.table)
+        self.apply_stylesheet()
         self.create_menu()
         self.create_statusbar()
         # Conexiones de señales y slots
@@ -57,6 +60,65 @@ class ExcelClone(QMainWindow):
         self.clipboard = None
         self.undo_stack = []
         self.redo_stack = []
+
+    def generate_excel_columns(self, n):
+        """
+        Genera nombres de columnas estilo Excel hasta n columnas.
+        """
+        cols = []
+        for i in range(n):
+            name = ''
+            j = i
+            while True:
+                name = chr(65 + (j % 26)) + name
+                j = j // 26 - 1
+                if j < 0:
+                    break
+            cols.append(name)
+        return cols
+
+    def apply_stylesheet(self):
+        """
+        Aplica un tema visual moderno a la aplicación.
+        """
+        self.setStyleSheet('''
+            QMainWindow {
+                background: #f5f6fa;
+            }
+            QTableWidget {
+                background: #ffffff;
+                alternate-background-color: #f0f0f0;
+                gridline-color: #d1d8e6;
+                font-size: 14px;
+                selection-background-color: #a3c9f7;
+                selection-color: #222;
+            }
+            QHeaderView::section {
+                background: #4a69bd;
+                color: white;
+                font-weight: bold;
+                border: 1px solid #d1d8e6;
+                padding: 4px;
+            }
+            QMenuBar {
+                background: #4a69bd;
+                color: white;
+            }
+            QMenuBar::item:selected {
+                background: #6a89cc;
+            }
+            QMenu {
+                background: #f5f6fa;
+                border: 1px solid #d1d8e6;
+            }
+            QMenu::item:selected {
+                background: #a3c9f7;
+                color: #222;
+            }
+            QStatusBar {
+                background: #d1d8e6;
+            }
+        ''')
 
     def create_statusbar(self):
         """
@@ -261,55 +323,58 @@ class ExcelClone(QMainWindow):
         """
         Crea la barra de menús principal con todas las acciones.
         """
+        from PyQt5.QtGui import QIcon
         menubar = self.menuBar()
         # Menú Archivo
         file_menu = menubar.addMenu("Archivo")
-        open_action = QAction("Abrir", self)
+        open_action = QAction(QIcon.fromTheme("document-open"), "Abrir", self)
         open_action.triggered.connect(self.open_file)
         file_menu.addAction(open_action)
-        save_action = QAction("Guardar", self)
+        save_action = QAction(QIcon.fromTheme("document-save"), "Guardar", self)
         save_action.triggered.connect(self.save_file)
         file_menu.addAction(save_action)
-        exit_action = QAction("Salir", self)
+        exit_action = QAction(QIcon.fromTheme("application-exit"), "Salir", self)
         exit_action.triggered.connect(self.close)
         file_menu.addAction(exit_action)
         # Menú Inicio
         home_menu = menubar.addMenu("Inicio")
-        home_menu.addAction("Copiar", self.copy_cells)
-        home_menu.addAction("Cortar", self.cut_cells)
-        home_menu.addAction("Pegar", self.paste_cells)
-        home_menu.addAction("Borrar contenido", self.clear_cells)
+        home_menu.addAction(QIcon.fromTheme("edit-copy"), "Copiar", self.copy_cells)
+        home_menu.addAction(QIcon.fromTheme("edit-cut"), "Cortar", self.cut_cells)
+        home_menu.addAction(QIcon.fromTheme("edit-paste"), "Pegar", self.paste_cells)
+        home_menu.addAction(QIcon.fromTheme("edit-clear"), "Borrar contenido", self.clear_cells)
         home_menu.addSeparator()
-        home_menu.addAction("Negrita", self.set_bold)
-        home_menu.addAction("Cursiva", self.set_italic)
-        home_menu.addAction("Subrayado", self.set_underline)
+        home_menu.addAction(QIcon.fromTheme("format-text-bold"), "Negrita", self.set_bold)
+        home_menu.addAction(QIcon.fromTheme("format-text-italic"), "Cursiva", self.set_italic)
+        home_menu.addAction(QIcon.fromTheme("format-text-underline"), "Subrayado", self.set_underline)
         home_menu.addSeparator()
-        home_menu.addAction("Color de fondo", self.set_bg_color)
-        home_menu.addAction("Color de texto", self.set_fg_color)
-        home_menu.addAction("Fuente...", self.set_font)
+        home_menu.addAction(QIcon.fromTheme("format-fill-color"), "Color de fondo", self.set_bg_color)
+        home_menu.addAction(QIcon.fromTheme("format-text-color"), "Color de texto", self.set_fg_color)
+        home_menu.addAction(QIcon.fromTheme("preferences-desktop-font"), "Fuente...", self.set_font)
         home_menu.addSeparator()
-        home_menu.addAction("Alinear izquierda", lambda: self.set_alignment(Qt.AlignLeft))
-        home_menu.addAction("Alinear centro", lambda: self.set_alignment(Qt.AlignCenter))
-        home_menu.addAction("Alinear derecha", lambda: self.set_alignment(Qt.AlignRight))
-        # Menú Insertar
-        insert_menu = menubar.addMenu("Insertar")
-        insert_menu.addAction("Gráfico...", self.insert_chart)
-        insert_menu.addAction("Insertar fila", self.insert_row)
-        insert_menu.addAction("Insertar columna", self.insert_col)
-        insert_menu.addAction("Insertar fecha/hora", self.insert_datetime)
+        home_menu.addAction(QIcon.fromTheme("format-justify-left"), "Alinear izquierda", lambda: self.set_alignment(Qt.AlignLeft))
+        home_menu.addAction(QIcon.fromTheme("format-justify-center"), "Alinear centro", lambda: self.set_alignment(Qt.AlignCenter))
+        home_menu.addAction(QIcon.fromTheme("format-justify-right"), "Alinear derecha", lambda: self.set_alignment(Qt.AlignRight))
+        # Menú Insertar con iconos y separadores visuales
+        insert_menu = menubar.addMenu(QIcon.fromTheme("list-add"), "Insertar")
+        insert_menu.addAction(QIcon.fromTheme("view-statistics"), "Gráfico...", self.insert_chart)
+        insert_menu.addSeparator()
+        insert_menu.addAction(QIcon.fromTheme("list-add"), "Insertar fila", self.insert_row)
+        insert_menu.addAction(QIcon.fromTheme("list-add"), "Insertar columna", self.insert_col)
+        insert_menu.addSeparator()
+        insert_menu.addAction(QIcon.fromTheme("insert-date"), "Insertar fecha/hora", self.insert_datetime)
         # Menú Datos
-        data_menu = menubar.addMenu("Datos")
-        data_menu.addAction("Buscar/Reemplazar", self.find_replace)
-        data_menu.addAction("Ordenar ascendente", self.sort_asc)
-        data_menu.addAction("Ordenar descendente", self.sort_desc)
+        data_menu = menubar.addMenu(QIcon.fromTheme("view-sort-ascending"), "Datos")
+        data_menu.addAction(QIcon.fromTheme("edit-find-replace"), "Buscar/Reemplazar", self.find_replace)
+        data_menu.addAction(QIcon.fromTheme("view-sort-ascending"), "Ordenar ascendente", self.sort_asc)
+        data_menu.addAction(QIcon.fromTheme("view-sort-descending"), "Ordenar descendente", self.sort_desc)
         # Menú Ver
-        view_menu = menubar.addMenu("Ver")
-        view_menu.addAction("Seleccionar todo", self.select_all)
-        view_menu.addAction("Ajustar ancho de columna", self.auto_resize_columns)
-        view_menu.addAction("Ajustar alto de fila", self.auto_resize_rows)
+        view_menu = menubar.addMenu(QIcon.fromTheme("view-list-details"), "Ver")
+        view_menu.addAction(QIcon.fromTheme("edit-select-all"), "Seleccionar todo", self.select_all)
+        view_menu.addAction(QIcon.fromTheme("zoom-fit-best"), "Ajustar ancho de columna", self.auto_resize_columns)
+        view_menu.addAction(QIcon.fromTheme("zoom-fit-best"), "Ajustar alto de fila", self.auto_resize_rows)
         # Menú Ayuda
-        help_menu = menubar.addMenu("Ayuda")
-        help_menu.addAction("Acerca de", self.show_about)
+        help_menu = menubar.addMenu(QIcon.fromTheme("help-about"), "Ayuda")
+        help_menu.addAction(QIcon.fromTheme("help-about"), "Acerca de", self.show_about)
 
     # --- Funciones de archivo ---
     def open_file(self):
