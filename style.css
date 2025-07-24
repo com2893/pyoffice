@@ -1,0 +1,78 @@
+/* Reseteo básico */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Fondo y cuerpo */
+body {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, #e0f7fa, #ffffff);
+    font-family: 'Inter', sans-serif;
+    text-align: center;
+    padding: 1rem;
+}
+
+/* Título con degradado */
+#titulo {
+    font-size: 3rem;
+    font-weight: 800;
+    background: linear-gradient(90deg, #007bff, #00bcd4);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 1rem;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Descripción */
+#description {
+    font-size: 1.2rem;
+    color: #555;
+    max-width: 600px;
+    margin-bottom: 2rem;
+    line-height: 1.5;
+}
+
+/* Botón de descarga */
+#download {
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 0.8rem 2rem;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s, transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+}
+
+#download:hover {
+    background: #0056b3;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 16px rgba(0, 86, 179, 0.3);
+}
+
+#download:active {
+    transform: translateY(0);
+    box-shadow: 0 4px 8px rgba(0, 86, 179, 0.3);
+}
+
+/* Responsividad */
+@media (max-width: 600px) {
+    #titulo {
+        font-size: 2.2rem;
+    }
+    #description {
+        font-size: 1rem;
+    }
+    #download {
+        padding: 0.7rem 1.5rem;
+        font-size: 1rem;
+    }
+}
